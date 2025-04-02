@@ -8,8 +8,17 @@ const defaultValues = {
   imdbId: '',
 };
 
-function validate(field: string): string {
+function validateField(field: string): string {
   return field.trim() === '' ? 'This field is required' : '';
+}
+
+function validateForm(fields: Record<string, string>) {
+  return {
+    title: validateField(fields.title),
+    imgUrl: validateField(fields.imgUrl),
+    imdbUrl: validateField(fields.imdbUrl),
+    imdbId: validateField(fields.imdbId),
+  };
 }
 
 export const NewMovie = () => {
@@ -24,27 +33,24 @@ export const NewMovie = () => {
   const [imdbId, setImdbId] = useState('');
   const [description, setDescription] = useState('');
 
-  const isFormValid =
+  const isFormComplete =
     title.trim() && imgUrl.trim() && imdbUrl.trim() && imdbId.trim();
 
   function handleBlur(event: React.FocusEvent<HTMLInputElement>) {
     const { name, value } = event.target;
 
-    setErrors((prev) => ({
-      ...prev,
-      [name]: validate(value),
-    }));
+    if (name !== 'description') {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: validateField(value),
+      }));
+    }
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const newErrors = {
-      title: validate(title),
-      imgUrl: validate(imgUrl),
-      imdbUrl: validate(imdbUrl),
-      imdbId: validate(imdbId),
-    };
+    const newErrors = validateForm({ title, imgUrl, imdbUrl, imdbId });
 
     setErrors(newErrors);
 
@@ -58,12 +64,7 @@ export const NewMovie = () => {
     setImdbUrl('');
     setImdbId('');
     setDescription('');
-    setErrors({
-      title: '',
-      imgUrl: '',
-      imdbUrl: '',
-      imdbId: '',
-    });
+    setErrors(defaultValues);
   }
 
   function handleTitleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -144,7 +145,7 @@ export const NewMovie = () => {
             type="submit"
             data-cy="submit-button"
             className="button is-link"
-            disabled={!isFormValid}
+            disabled={!isFormComplete}
           >
             Add
           </button>
